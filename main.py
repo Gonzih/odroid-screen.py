@@ -29,6 +29,9 @@ class Board:
     def clear(self):
         self.write('\033c')
 
+    def cursor_reset(self):
+        self.write('\033[H')
+
     def color(self, c: int):
         s = f'\033[{c}m'
         self.write(s)
@@ -67,12 +70,14 @@ class Monitor:
         self.b = Board(port)
 
     def write_all(self):
-        self.b.clear()
+        self.b.cursor_reset()
         self.b.color_reset()
+
         self.write_gpu()
+
         self.b.flush()
 
-    def colorify(self, v, max_v=100.0, limit=0.5, good=2, bad=1):
+    def colorify(self, v, max_v=100.0, limit=0.7, good=2, bad=1):
         current = v / max_v
         if current <= limit:
             self.b.fg(good)
@@ -83,17 +88,20 @@ class Monitor:
         gpus = GPUtil.getGPUs()
         for gpu in gpus:
             self.b.fg(self.colors.blue)
-            self.b.write(f"GPU{gpu.id}")
+            self.b.write(f" GPU{gpu.id} ")
             self.b.color_reset()
 
             self.colorify(gpu.load)
-            self.b.write(f" {gpu.load}%")
+            self.b.write(f" {gpu.load}% ")
+            self.b.color_reset()
 
-            self.colorify(gpu.temperature, max_v=90.0)
-            self.b.write(f" {gpu.temperature}C")
+            # self.colorify(gpu.temperature, max_v=90.0, limit=0.8)
+            self.b.write(f" {gpu.temperature}C ")
+            # self.b.color_reset()
 
-            self.colorify(gpu.memoryUsed, max_v=gpu.memoryTotal, limit=0.8)
-            self.b.writeln(f" {gpu.memoryUsed}/{gpu.memoryTotal} MB")
+            # self.colorify(gpu.memoryUsed, max_v=gpu.memoryTotal, limit=0.8)
+            self.b.writeln(f" {gpu.memoryUsed}/{gpu.memoryTotal} MB ")
+            # self.b.color_reset()
 
 
 if __name__ == '__main__':
@@ -102,4 +110,4 @@ if __name__ == '__main__':
     print('Looping')
     while True:
         m.write_all()
-        time.sleep(10)
+        time.sleep(5)
