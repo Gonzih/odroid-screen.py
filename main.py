@@ -91,8 +91,9 @@ class Monitor:
             self.b.write(f" GPU{gpu.id} ")
             self.b.color_reset()
 
-            self.colorify(gpu.load)
-            self.b.write(f" {gpu.load}% ")
+            load = gpu.load * 100
+            self.colorify(load, max_v=100.0)
+            self.b.write(f" {round(load, 0)}% ")
             self.b.color_reset()
 
             # self.colorify(gpu.temperature, max_v=90.0, limit=0.8)
